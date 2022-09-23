@@ -23,8 +23,4 @@ public class TestContext {
         return pageObjectManager;
     }
 
-//    public Helpers getHelpers() {
-//        return helpers;
-//    }
-
 }

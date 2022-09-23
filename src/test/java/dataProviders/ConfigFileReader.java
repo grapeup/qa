@@ -1,89 +1,62 @@
 package dataProviders;
 
 import enums.DriverType;
-import enums.EnvironmentType;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Properties;
 
 public class ConfigFileReader {
     private Properties properties;
-    private final String propertyFilePath= "src/test/resources/configs/Configuration.properties";
+    private static final String PROPERTY_FILE_PATH = "src/test/resources/configs/Configuration.properties";
+    private static final String DRIVER_PATH_CMD_LINE_EXCEPTION = "Driver Path not specified in commandline parameter for the Key:driverPath";
+    private static final String DRIVER_PATH_CONFIG_EXCEPTION = "Driver Path not specified in the Configuration.properties file for the Key:driverPath";
+    private static final String BROWSER_NAME_CONFIG_EXCEPTION = "Browser Name Key value in Configuration.properties is not matched : ";
+    private static final String BROWSER_NAME_CMD_LINE_EXCEPTION = "Browser Name Key value in the commandline parameter is not matched : ";
 
-    public ConfigFileReader(){
-        BufferedReader reader;
-        try {
-            reader = new BufferedReader(new FileReader(propertyFilePath));
+    private static final int DEFAULT_IMPLICIT_WAIT_SECONDS = 30;
+
+
+    public ConfigFileReader() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(PROPERTY_FILE_PATH))) {
             properties = new Properties();
-            try {
-                properties.load(reader);
-                reader.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } catch (FileNotFoundException e) {
+            properties.load(reader);
+        } catch (IOException e) {
             e.printStackTrace();
-            throw new RuntimeException("Configuration.properties not found at " + propertyFilePath);
         }
     }
 
-    public String getDriverPath(){
+    public String getDriverPath() {
         String browserName = System.getProperty("browser");
-        if(browserName == null)  {
+        if (browserName == null) {
             return getDriverPathFromConfig();
         }
-        else if (browserName.equals("chrome")) {
-            String driverPath = System.getProperty("chromeDriverPath");
-            if(driverPath!= null) return driverPath;
-            else throw new RuntimeException("Driver Path not specified in commandline parameter for the Key:driverPath");
-        }
-        else if(browserName.equals("firefox")) {
-            String driverPath = System.getProperty("firefoxDriverPath");
-            if(driverPath!= null) return driverPath;
-            else throw new RuntimeException("Driver Path not specified in commandline parameter for the Key:driverPath");
-        }
-        else if(browserName.equals("edge")) {
-            String driverPath = System.getProperty("edgeDriverPath");
-            if(driverPath!= null) return driverPath;
-            else throw new RuntimeException("Driver Path not specified in commandline parameter for the Key:driverPath");
-        }
-        else if (browserName.equals("safari")) {
-            String driverPath = System.getProperty("safariDriverPath");
-            if(driverPath!= null) return driverPath;
-            else throw new RuntimeException("Driver Path not specified in commandline parameter for the Key:driverPath");
-        }
-        else throw new RuntimeException("Browser Name Key value in the commandline parameter is not matched : " + browserName);
+        return switch (browserName) {
+            case "chrome" -> Optional.ofNullable(System.getProperty("chromeDriverPath")).orElseThrow(() -> new RuntimeException(DRIVER_PATH_CMD_LINE_EXCEPTION));
+            case "firefox" -> Optional.ofNullable(System.getProperty("firefoxDriverPath")).orElseThrow(() -> new RuntimeException(DRIVER_PATH_CMD_LINE_EXCEPTION));
+            case "edge" -> Optional.ofNullable(System.getProperty("edgeDriverPath")).orElseThrow(() -> new RuntimeException(DRIVER_PATH_CMD_LINE_EXCEPTION));
+            case "safari" -> Optional.ofNullable(System.getProperty("safariDriverPath")).orElseThrow(() -> new RuntimeException(DRIVER_PATH_CMD_LINE_EXCEPTION));
+            default -> throw new RuntimeException(BROWSER_NAME_CMD_LINE_EXCEPTION + browserName);
+        };
     }
 
     private String getDriverPathFromConfig() {
         String browserName = properties.getProperty("browser");
-        if(browserName == null || browserName.equals("chrome")) {
-            String driverPath = properties.getProperty("chromeDriverPath");
-            if(driverPath!= null) return driverPath;
-            else throw new RuntimeException("Driver Path not specified in the Configuration.properties file for the Key:driverPath");
+        if (browserName == null || browserName.equals("chrome")) {
+            return Optional.ofNullable(properties.getProperty("chromeDriverPath")).orElseThrow(() -> new RuntimeException(DRIVER_PATH_CONFIG_EXCEPTION));
         }
-        else if(browserName.equals("firefox")) {
-            String driverPath = properties.getProperty("firefoxDriverPath");
-            if(driverPath!= null) return driverPath;
-            else throw new RuntimeException("Driver Path not specified in the Configuration.properties file for the Key:driverPath");
-        }
-        else if(browserName.equals("edge")) {
-            String driverPath = properties.getProperty("edgeDriverPath");
-            if(driverPath!= null) return driverPath;
-            else throw new RuntimeException("Driver Path not specified in the Configuration.properties file for the Key:driverPath");
-        }
-        else if (browserName.equals("safari")) {
-            String driverPath = properties.getProperty("safariDriverPath");
-            if(driverPath!= null) return driverPath;
-            else throw new RuntimeException("Driver Path not specified in the Configuration.properties file for the Key:driverPath");
-        }
-        else throw new RuntimeException("Browser Name Key value in Configuration.properties is not matched : " + browserName);
+        return switch (browserName) {
+            case "firefox" -> Optional.ofNullable(properties.getProperty("firefoxDriverPath")).orElseThrow(() -> new RuntimeException(DRIVER_PATH_CONFIG_EXCEPTION));
+            case "edge" -> Optional.ofNullable(properties.getProperty("edgeDriverPath")).orElseThrow(() -> new RuntimeException(DRIVER_PATH_CONFIG_EXCEPTION));
+            case "safari" -> Optional.ofNullable(properties.getProperty("safariDriverPath")).orElseThrow(() -> new RuntimeException(DRIVER_PATH_CONFIG_EXCEPTION));
+            default -> throw new RuntimeException(BROWSER_NAME_CONFIG_EXCEPTION + browserName);
+        };
     }
 
     public long getImplicitlyWait() {
+
         String implicitlyWait = properties.getProperty("implicitlyWait");
         if(implicitlyWait != null) {
             try{
@@ -92,7 +65,7 @@ public class ConfigFileReader {
                 throw new RuntimeException("Not able to parse value : " + implicitlyWait + " in to Long");
             }
         }
-        else return 30;
+        else return DEFAULT_IMPLICIT_WAIT_SECONDS;
     }
 
     public String getApplicationUrl() {
@@ -113,71 +86,73 @@ public class ConfigFileReader {
 
     public DriverType getBrowser() {
         String browserName = System.getProperty("browser");
-        if(browserName == null) {
+        if (browserName == null) {
             return getBrowserFromConfig();
-        } else if(browserName.equals("chrome")) {
-            return DriverType.CHROME;
-        } else if(browserName.equalsIgnoreCase("firefox")) {
-            return DriverType.FIREFOX;
-        } else if(browserName.equals("edge")) {
-            return DriverType.EDGE;
-        } else if(browserName.equals("safari")) {
-            return DriverType.SAFARI;
         }
-        else throw new RuntimeException("Browser Name Key value in the command line parameter is not matched : " + System.getProperty("browser"));
+        return switch (browserName) {
+            case "chrome" -> DriverType.CHROME;
+            case "firefox" -> DriverType.FIREFOX;
+            case "edge" -> DriverType.EDGE;
+            case "safari" -> DriverType.SAFARI;
+            default -> throw new RuntimeException(BROWSER_NAME_CMD_LINE_EXCEPTION + System.getProperty("browser"));
+        };
     }
 
     private DriverType getBrowserFromConfig() {
         String browserName = properties.getProperty("browser");
-        if(browserName == null || browserName.equals("chrome")) return DriverType.CHROME;
-        else if(browserName.equalsIgnoreCase("firefox")) return DriverType.FIREFOX;
-        else if(browserName.equals("edge")) return DriverType.EDGE;
-        else if(browserName.equals("safari")) return DriverType.SAFARI;
-        else throw new RuntimeException("Browser Name Key value in Configuration.properties is not matched : " + browserName);
+        if (browserName == null || browserName.equals("chrome")) return DriverType.CHROME;
+        return switch (browserName) {
+            case "firefox" -> DriverType.FIREFOX;
+            case "edge" -> DriverType.EDGE;
+            case "safari" -> DriverType.SAFARI;
+            default -> throw new RuntimeException(BROWSER_NAME_CONFIG_EXCEPTION + browserName);
+        };
     }
 
     public String getBrowserPath() {
         String browserName = System.getProperty("browser");
-        if(browserName == null) {
+        if (browserName == null) {
             return getBrowserPathFromConfig();
         }
-        else if (browserName.equals("chrome")) {
-            return System.getProperty("chromeBrowserPath");
-        }
-        else if(browserName.equals("firefox")) {
-            return System.getProperty("firefoxBrowserPath");
-        }
-        else if(browserName.equals("edge")) {
-            return System.getProperty("edgeBrowserPath");
-        }
-        else if(browserName.equals("safari")) {
-            return System.getProperty("safariBrowserPath");
-        }
-        else throw new RuntimeException("Browser Name Key value in the commandline parameter is not matched : " + browserName);
+        return switch (browserName) {
+            case "chrome" -> System.getProperty("chromeBrowserPath");
+            case "firefox" -> System.getProperty("firefoxBrowserPath");
+            case "edge" -> System.getProperty("edgeBrowserPath");
+            case "safari" -> System.getProperty("safariBrowserPath");
+            default -> throw new RuntimeException(BROWSER_NAME_CMD_LINE_EXCEPTION + browserName);
+        };
     }
 
     private String getBrowserPathFromConfig() {
         String browserName = properties.getProperty("browser");
-        if(browserName == null || browserName.equals("chrome")) return properties.getProperty("chromeBrowserPath");
-        else if(browserName.equalsIgnoreCase("firefox")) return properties.getProperty("firefoxBrowserPath");
-        else if(browserName.equals("edge")) return properties.getProperty("edgeBrowserPath");
-        else if(browserName.equals("safari")) return properties.getProperty("safariBrowserPath");
-        else throw new RuntimeException("Browser Name Key value in Configuration.properties is not matched : " + browserName);
+        if (browserName == null || browserName.equals("chrome")) {
+            return properties.getProperty("chromeBrowserPath");
+        }
+        return switch (browserName) {
+            case "firefox" -> properties.getProperty("firefoxBrowserPath");
+            case "edge" -> properties.getProperty("edgeBrowserPath");
+            case "safari" -> properties.getProperty("safariBrowserPath");
+            default -> throw new RuntimeException(BROWSER_NAME_CONFIG_EXCEPTION + browserName);
+        };
     }
 
-    public EnvironmentType getEnvironment() {
-        String environmentName = properties.getProperty("environment");
-        if(environmentName == null || environmentName.equalsIgnoreCase("local")) return EnvironmentType.LOCAL;
-        else if(environmentName.equals("remote")) return EnvironmentType.DEV;
-        else throw new RuntimeException("Environment Type Key value in Configuration.properties is not matched : " + environmentName);
-    }
-
-    public Boolean getBrowserWindowSize() {
+    public Boolean isBrowserWindowMaximized() {
         String windowSize = properties.getProperty("windowMaximize");
         if(windowSize != null) {
             return Boolean.valueOf(windowSize);
         }
-        else return true;
+        else {
+            return true;
+        }
+    }
+
+    public Boolean getHeadlessFlag() {
+        String headlessFlag = properties.getProperty("headlessMode");
+        if (headlessFlag != null) {
+            return Boolean.valueOf(headlessFlag);
+        } else {
+            return true;
+        }
     }
 
 }

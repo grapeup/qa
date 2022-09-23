@@ -3,6 +3,7 @@ package pageObjects;
 
 import helpers.Helpers;
 import managers.FileReaderManager;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -18,42 +19,41 @@ public class LoginPage {
     }
 
 
-
-    // web element locators dictionary:
-    @FindBy(name = "username")
+    @FindBy(name = "")
     WebElement emailInput;
 
-    @FindBy(name = "password")
+    @FindBy(name = "")
     WebElement passwordInput;
 
-    @FindBy(className = "button-submit")
+    @FindBy(className = "")
     WebElement loginButton;
 
-    @FindBy(className = "error")
+    @FindBy(className = "")
     WebElement errorMessage;
 
-    // re-usable methods:
 
     public void navigateToLoginPage(){
         String loginUrl = FileReaderManager.getInstance().getConfigReader().getApplicationUrl();
         driver.get(loginUrl);
     }
-
-    public void enterUsername(String username){
-        emailInput.sendKeys(username);
-    }
-
-    public void enterPassword(String password){
-        passwordInput.sendKeys(password);
-    }
+    
 
     public void clickOnLoginButton() {loginButton.click();}
 
     public boolean isUserLoggedOut(){
-        return Helpers.isPresent(loginButton) && Helpers.isPresent(emailInput) && Helpers.isPresent(passwordInput);
+        return Helpers.isVisible(loginButton) && Helpers.isVisible(emailInput) && Helpers.isVisible(passwordInput);
     }
 
     public boolean isErrorMessageDisplayed(){
-        return Helpers.isPresent(errorMessage);
+        return Helpers.isVisible(errorMessage);
+    }
+
+    public void enterUsernameAndPassword(String username, String password) {
+        emailInput.click();
+        emailInput.sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
+        emailInput.sendKeys(username);
+        passwordInput.click();
+        passwordInput.sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
+        passwordInput.sendKeys(password);
     }
 }

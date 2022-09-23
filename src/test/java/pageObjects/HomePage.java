@@ -15,21 +15,19 @@ public class HomePage {
         PageFactory.initElements(driver, this);
     }
 
-    // web element locators dictionary:
 
-    @FindBy(xpath = "//h1[text() = 'Summary of Leads Received']")
+    @FindBy(xpath = "")
     WebElement header;
 
-    @FindBy(css = ".dropdown-toggle")
+    @FindBy(css = "")
     WebElement menuButton;
 
-    @FindBy(xpath = "//a[@href='/logout']")
+    @FindBy(xpath = "")
     WebElement logoutButton;
 
-    // re-usable methods:
 
     public boolean isHomeScreenDisplayed(){
-        return Helpers.isPresent(header) && Helpers.isPresent(menuButton) && Helpers.isPresent(logoutButton);
+        return Helpers.isVisible(header) && Helpers.isVisible(menuButton) && Helpers.isVisible(logoutButton);
     }
 
     public void clickOnLogoutButton() {

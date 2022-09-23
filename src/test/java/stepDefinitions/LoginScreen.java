@@ -16,10 +16,9 @@ import java.io.IOException;
 
 public class LoginScreen {
 
-    JsonDataReader reader = new JsonDataReader();
-    LoginPage loginPage;
-    TestContext testContext;
-
+    private final JsonDataReader reader = new JsonDataReader();
+    private final LoginPage loginPage;
+    private final TestContext testContext;
 
     public LoginScreen(TestContext context) {
         testContext = context;
@@ -28,7 +27,6 @@ public class LoginScreen {
 
     @Given("user navigates to the login page")
     public void userNavigatesToTheLoginPage() {
-        //driver.get("https://smartadvisor.smartasset.com/login");
         loginPage.navigateToLoginPage();
     }
 
@@ -38,9 +36,8 @@ public class LoginScreen {
     }
 
     @When("^user enters (valid|invalid|no) credentials$")
-    public void userLogsInWithValidCredentials(String credType) throws IOException, ParseException {
+    public void userEntersCredentials(String credType) throws IOException, ParseException {
         String username = "", password = "";
-
         if (credType.equals("valid")) {
             username = reader.readJSONData("uname");
             password = reader.readJSONData("pwd");
@@ -48,8 +45,7 @@ public class LoginScreen {
             username = "invalid@email.com";
             password = "incorrect123pwd";
         }
-        loginPage.enterUsername(username);
-        loginPage.enterPassword(password);
+        loginPage.enterUsernameAndPassword(username, password);
     }
 
 

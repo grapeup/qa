@@ -16,20 +16,12 @@ public class PageObjectManager {
     }
 
     public HomePage getHomePage(){
-
         return (homePage == null) ? homePage = new HomePage(driver) : homePage;
-
     }
-
-
 
     public LoginPage getLoginPage() {
-
         return (loginPage == null) ? loginPage = new LoginPage(driver) : loginPage;
-        //return loginPage = new LoginPage(driver);
-
     }
-
 
 }
 

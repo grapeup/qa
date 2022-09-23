@@ -9,16 +9,10 @@ import java.io.IOException;
 
 
 public class JsonDataReader {
-    String data;
-
+    private final JSONParser parser = new JSONParser();
     public String readJSONData(String keyword) throws IOException, ParseException{
-
-        Object obj = new JSONParser().parse(new FileReader("src/test/resources/testData/creds.json"));
+        Object obj = parser.parse(new FileReader("src/test/resources/testData/creds.json"));
         JSONObject jo = (JSONObject) obj;
-        data = (String)jo.get(keyword);
-
-        return data;
-
+        return (String)jo.get(keyword);
     }
-
 }
